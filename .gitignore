@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Additionnal non-synchronised folders
+ignored/
+dataset_streamlit/
