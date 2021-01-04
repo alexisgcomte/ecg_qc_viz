@@ -8,11 +8,10 @@ fs = 1000
 
 # Loading in cache ECG
 
-
 @st.cache()
 def load_ecg():
     if target_id == 103001:
-        df_ecg = pd.read_pickle('dataset_streamlit/df_full_ecg_data_merge.pkl')
+        df_ecg = pd.read_pickle('dataset_streamlit/df_ecg_103001_selection.pkl')
     else:
         df_ecg = pd.read_pickle(
             'dataset_streamlit/df_full_ecg_data_merge_{}.pkl'.format(target_id))
@@ -24,7 +23,6 @@ if target_id == 103001:
     st.sidebar.header('103001 loaded')
 else:
     st.sidebar.header('{} loaded'.format(target_id))
-
 
 @st.cache()
 def load_annot():
@@ -44,12 +42,19 @@ def load_annot():
     for target in targets:
         df_ann[target] = df_ann[target] / fs
 
+
+    df_ann = df_ann[
+        (df_ann['cons_start_sample'] >= (df_ecg.index[0] / fs))
+        ].fillna(0)
+
+    df_ann.reset_index(drop=True, inplace=True)
+
     return df_ann
 
 
-df_ann = load_annot()
-
 df_ecg = load_ecg()
+print(df_ecg.head())
+df_ann = load_annot()
 
 # Subheader
 
@@ -73,8 +78,8 @@ frame_window_selection = st.sidebar.slider(
     value=16)
 
 frame_selection = st.sidebar.selectbox('frame_selection',
-                                       df_ann['cons_start_sample'].dropna(),
-                                       index=0)
+                                       options=df_ann['cons_start_sample'],
+                                       index = 0)
 
 if st.sidebar.checkbox('Frame Selection'):
     start_frame = int(round(frame_selection * fs, 0))
@@ -86,19 +91,14 @@ score_time_window_selection = st.sidebar.slider(
     min_value=1,
     max_value=60,
     step=1,
-    value=3)
+    value=9)
 
 score_time_window = score_time_window_selection * fs
-
 end_frame = start_frame + frame_window_selection * fs
 
 st.plotly_chart(fig_generation(df_ecg, start_frame, end_frame, fs=fs))
 
-fig_classif, fig_cr = result_generation(df_ecg,
-                                        start_frame,
-                                        end_frame,
-                                        window=score_time_window,
-                                        fs=fs)
+# fig_classif = result_generation(df_ecg, start_frame, end_frame, score_time_window, fs)
 
-st.plotly_chart(fig_classif)
-st.plotly_chart(fig_cr)
+# st(fig_classif)
+# st.plotly_chart(fig_cr)
