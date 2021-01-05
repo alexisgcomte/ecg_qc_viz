@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from modules.graph_generation import fig_generation, result_generation
+from modules.graph_generation import fig_generation
 
 
 target_id = 103001
@@ -53,7 +53,6 @@ def load_annot():
 
 
 df_ecg = load_ecg()
-print(df_ecg.head())
 df_ann = load_annot()
 
 # Subheader
@@ -63,10 +62,10 @@ st.sidebar.subheader(body='Frame selection')
 
 frame_start_selection = st.sidebar.slider(
     label='Start Frame:',
-    min_value=0,
+    min_value=int(round(df_ecg.index.values[0]/fs, 0)),
     max_value=int(round(df_ecg.index.values[-1]/fs, 0)),
     step=1,
-    value=0)
+    value=int(round(df_ecg.index.values[0]/fs, 0)))
 
 start_frame = frame_start_selection * fs
 
