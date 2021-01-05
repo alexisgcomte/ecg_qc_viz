@@ -2,6 +2,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import SQIs_class as SQI
+from ecg_qc import ecg_qc
+import math
 
 
 def fig_generation(df, start_frame, end_frame, fs=1000):
@@ -43,6 +45,39 @@ def fig_generation(df, start_frame, end_frame, fs=1000):
 
     fig.update_yaxes(title_text="ECG", secondary_y=False)
     fig.update_yaxes(title_text="Classification", secondary_y=True)
+
+    # Signal quality
+
+    lib_path = '/home/aura-alexis/github/ecg_qc_viz/env/lib64/python3.6/site-packages/ecg_qc-1.0b1-py3.6.egg/ecg_qc'
+    ecg_qc_test = ecg_qc(model='{}/ml/models/rfc.joblib'.format(lib_path))
+    time_window = 9
+    signal_quality_list = []
+    classif_data = pd.DataFrame(range(0,graph_df.shape[0]), columns=['classif'])
+    # print(graph_df.shape)
+
+    for ecg_signal_index in range((math.floor(graph_df.shape[0]/(fs*time_window)) + 1)):
+
+        start = ecg_signal_index*fs*time_window
+        end = start + fs*time_window
+        #  print(start, end)
+        ecg_data = graph_df['ecg_signal'].iloc[start:end].values
+        # sample = [[0.94, 0.59, 10.79, 0.51, 0.85, 2.97]]
+        # print(ecg_qc_test.compute_sqi_scores(ecg_data))
+        # print(len(ecg_data))
+        # print( ecg_qc_test.predict_quality(ecg_qc_test.compute_sqi_scores(ecg_data)))
+
+        # signal_quality = ecg_qc_test.get_signal_quality(ecg_data)
+        signal_quality = ecg_qc_test.predict_quality(ecg_qc_test.compute_sqi_scores(ecg_data))
+        signal_quality_list.append(signal_quality)
+        classif_data.iloc[ecg_signal_index*fs*time_window:ecg_signal_index*fs*time_window+fs*time_window] = signal_quality[0]
+        if signal_quality[0] == 1:
+            print('1!')
+
+
+    fig.add_trace(go.Scatter(x=graph_df.index/fs,
+                            y=classif_data['classif'].values,
+                            mode='lines',
+                            name='classif ecg_qc'), secondary_y=True)
 
     return fig
 

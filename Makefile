@@ -13,6 +13,14 @@ install_streamlit_dataset_limited:
 	unzip df_ecg_103001_selection.zip -d dataset_streamlit/; \
 	rm df_ecg_103001_selection.zip; \
 
+download_streamlit_dataset_start:
+	. $(FOLDER_PATH)/env/bin/activate; \
+	gdown https://drive.google.com/u/1/uc?id=1Gr5lgwRW2NWvYDsMBEyagZys0hyGVVyN&export=download; \
+
+install_streamlit_dataset_start:
+	unzip df_ecg_130001_selection_start.zip -d dataset_streamlit/; \
+	rm df_ecg_130001_selection_start.zip; \
+
 download_streamlit_dataset_103001:
 	. $(FOLDER_PATH)/env/bin/activate; \
 	wget https://physionet.org/files/butqdb/1.0.0/103001/103001_ANN.csv -O dataset_streamlit/103001_ANN.csv; \
