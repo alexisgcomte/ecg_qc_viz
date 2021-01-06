@@ -25,18 +25,20 @@ def ecg_graph_generation(df, start_frame, end_frame, fs=1000):
                              mode='lines',
                              name='ecg_qc'), secondary_y=True)
 
+    print(graph_df.index[0])
+
     fig.update_layout(template='plotly_white',
                       title='ECG viz',
                       xaxis_title='Seconds',
                       yaxis2=dict(range=[0, 1]),
                       xaxis=dict(showgrid=True,
+                                 tickmode='linear',
                                  ticks="inside",
                                  tickson="boundaries",
-                                 tick0=graph_df.index[0],
+                                 tick0=graph_df.index[0]/fs,
                                  ticklen=50,
                                  tickwidth=2,
                                  dtick=9))
-
 
     return fig
 
@@ -60,12 +62,13 @@ def heatmap_annot_generation(df, start_frame, end_frame, fs=1000):
     fig.update_layout(
         title='Annotators',
         xaxis=dict(showgrid=True,
-                   ticks="inside",
-                   tickson="boundaries",
-                   tick0=graph_df.index[0],
-                   ticklen=50,
-                   tickwidth=2,
-                   dtick=9))
+                    tickmode='linear',
+                    ticks="inside",
+                    tickson="boundaries",
+                    tick0=graph_df.index[0]/fs,
+                    ticklen=50,
+                    tickwidth=2,
+                    dtick=9))
 
     return fig
 
@@ -90,13 +93,13 @@ def heatmap_pred_generation(df, start_frame, end_frame, fs=1000):
     fig.update_layout(
         title='Prediction',
         xaxis=dict(showgrid=True,
-                   ticks="inside",
-                   tickson="boundaries",
-                   tick0=graph_df.index[0],
-                   ticklen=50,
-                   tickwidth=3,
-                   dtick=9)
-        )
+                    tickmode='linear',
+                    ticks="inside",
+                    tickson="boundaries",
+                    tick0=graph_df.index[0]/fs,
+                    ticklen=50,
+                    tickwidth=2,
+                    dtick=9))
 
     return fig
 
