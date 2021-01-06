@@ -28,10 +28,15 @@ def ecg_graph_generation(df, start_frame, end_frame, fs=1000):
     fig.update_layout(template='plotly_white',
                       title='ECG viz',
                       xaxis_title='Seconds',
-                      yaxis2=dict(range=[0, 1]))
+                      yaxis2=dict(range=[0, 1]),
+                      xaxis=dict(showgrid=True,
+                                 ticks="inside",
+                                 tickson="boundaries",
+                                 tick0=graph_df.index[0],
+                                 ticklen=50,
+                                 tickwidth=2,
+                                 dtick=9))
 
-    fig.update_yaxes(title_text="ECG", secondary_y=False)
-    fig.update_yaxes(title_text="Classification", secondary_y=True)
 
     return fig
 
@@ -53,7 +58,14 @@ def heatmap_annot_generation(df, start_frame, end_frame, fs=1000):
             zmax=3))
 
     fig.update_layout(
-        title='Annotators')
+        title='Annotators',
+        xaxis=dict(showgrid=True,
+                   ticks="inside",
+                   tickson="boundaries",
+                   tick0=graph_df.index[0],
+                   ticklen=50,
+                   tickwidth=2,
+                   dtick=9))
 
     return fig
 
@@ -69,14 +81,22 @@ def heatmap_pred_generation(df, start_frame, end_frame, fs=1000):
     fig = go.Figure(data=go.Heatmap(
             x=graph_df.index/fs,
             y=['pred'],
-            z=data[0],
+            z=data,
             colorscale=[[0.0, "rgb(120,0,0)"],
                         [1.0, "rgb(0,160,0)"]],
             zmin=0,
             zmax=1))
 
     fig.update_layout(
-        title='Prediction')
+        title='Prediction',
+        xaxis=dict(showgrid=True,
+                   ticks="inside",
+                   tickson="boundaries",
+                   tick0=graph_df.index[0],
+                   ticklen=50,
+                   tickwidth=3,
+                   dtick=9)
+        )
 
     return fig
 
