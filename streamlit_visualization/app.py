@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
-from modules.graph_generation import fig_generation
+from modules.graph_generation import (ecg_graph_generation,
+                                      heatmap_annot_generation,
+                                      heatmap_pred_generation)
 
 
 target_id = 103001
@@ -8,13 +10,16 @@ fs = 1000
 
 # Loading in cache ECG
 
+
 @st.cache()
 def load_ecg():
     if target_id == 103001:
-        df_ecg = pd.read_pickle('dataset_streamlit/df_ecg_103001_selection.pkl')
+        df_ecg = pd.read_pickle(
+            'dataset_streamlit/df_ecg_103001_selection.pkl')
     else:
         df_ecg = pd.read_pickle(
-            'dataset_streamlit/df_full_ecg_data_merge_{}.pkl'.format(target_id))
+            'dataset_streamlit/df_full_ecg_data_merge_{}.pkl'.format(
+                target_id))
     return df_ecg
 
 
@@ -23,6 +28,7 @@ if target_id == 103001:
     st.sidebar.header('103001 loaded')
 else:
     st.sidebar.header('{} loaded'.format(target_id))
+
 
 @st.cache()
 def load_annot():
@@ -41,7 +47,6 @@ def load_annot():
 
     for target in targets:
         df_ann[target] = df_ann[target] / fs
-
 
     df_ann = df_ann[
         (df_ann['cons_start_sample'] >= (df_ecg.index[0] / fs))
@@ -78,7 +83,7 @@ frame_window_selection = st.sidebar.slider(
 
 frame_selection = st.sidebar.selectbox('frame_selection',
                                        options=df_ann['cons_start_sample'],
-                                       index = 0)
+                                       index=0)
 
 if st.sidebar.checkbox('Frame Selection'):
     start_frame = int(round(frame_selection * fs, 0))
@@ -95,9 +100,11 @@ score_time_window_selection = st.sidebar.slider(
 score_time_window = score_time_window_selection * fs
 end_frame = start_frame + frame_window_selection * fs
 
-st.plotly_chart(fig_generation(df_ecg, start_frame, end_frame, fs=fs))
+st.plotly_chart(
+    ecg_graph_generation(df_ecg, start_frame, end_frame, fs=fs))
 
-# fig_classif = result_generation(df_ecg, start_frame, end_frame, score_time_window, fs)
+st.plotly_chart(
+    heatmap_annot_generation(df_ecg, start_frame, end_frame, fs=fs))
 
-# st(fig_classif)
-# st.plotly_chart(fig_cr)
+st.plotly_chart(
+    heatmap_pred_generation(df_ecg, start_frame, end_frame, fs=fs))
