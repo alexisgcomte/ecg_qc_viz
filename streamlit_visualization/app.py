@@ -106,5 +106,5 @@ st.plotly_chart(
 st.plotly_chart(
     heatmap_annot_generation(df_ecg, start_frame, end_frame, fs=fs))
 
-st.plotly_chart(
-    heatmap_pred_generation(df_ecg, start_frame, end_frame, fs=fs))
+# st.plotly_chart(
+#     heatmap_pred_generation(df_ecg, start_frame, end_frame, fs=fs))
