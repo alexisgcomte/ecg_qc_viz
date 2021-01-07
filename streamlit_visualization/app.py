@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
-from modules.graph_generation import (ecg_graph_generation,
-                                      heatmap_annot_generation,
-                                      heatmap_pred_generation)
+from modules.graph_generation import ecg_graph_generation
 
 
 target_id = 103001
@@ -81,6 +79,13 @@ frame_window_selection = st.sidebar.slider(
     step=2,
     value=16)
 
+tick_space_selection = st.sidebar.slider(
+    label='Tick spacing (seconds):',
+    min_value=1,
+    max_value=60,
+    step=1,
+    value=9)
+
 frame_selection = st.sidebar.selectbox('frame_selection',
                                        options=df_ann['cons_start_sample'],
                                        index=0)
@@ -88,23 +93,11 @@ frame_selection = st.sidebar.selectbox('frame_selection',
 if st.sidebar.checkbox('Frame Selection'):
     start_frame = int(round(frame_selection * fs, 0))
 
-st.sidebar.subheader(body='Score time window selection')
-
-score_time_window_selection = st.sidebar.slider(
-    label='Score time window (seconds):',
-    min_value=1,
-    max_value=60,
-    step=1,
-    value=9)
-
-score_time_window = score_time_window_selection * fs
 end_frame = start_frame + frame_window_selection * fs
 
 st.plotly_chart(
-    ecg_graph_generation(df_ecg, start_frame, end_frame, fs=fs))
-
-st.plotly_chart(
-    heatmap_annot_generation(df_ecg, start_frame, end_frame, fs=fs))
-
-# st.plotly_chart(
-#     heatmap_pred_generation(df_ecg, start_frame, end_frame, fs=fs))
+    ecg_graph_generation(df=df_ecg,
+                         start_frame=start_frame,
+                         end_frame=end_frame,
+                         tick_space=tick_space_selection,
+                         fs=fs))
