@@ -77,9 +77,7 @@ def ecg_graph_generation(df: pd.DataFrame,
 
 def ecg_qc_predict(dataset: pd.DataFrame) -> pd.DataFrame:
 
-    lib_path = '/home/aura-alexis/github/ecg_qc_viz/env/lib64/python3.6/' + \
-        'site-packages/ecg_qc-1.0b1-py3.6.egg/ecg_qc'
-    ecg_qc_test = ecg_qc(model='{}/ml/models/rfc.joblib'.format(lib_path))
+    ecg_qc_test = ecg_qc()
     time_window = 9
     fs = 1000
 
@@ -97,9 +95,10 @@ def ecg_qc_predict(dataset: pd.DataFrame) -> pd.DataFrame:
 
         signal_quality = ecg_qc_test.predict_quality(
             ecg_qc_test.compute_sqi_scores(ecg_data))
+        print(signal_quality)
         classif_ecg_qc_data.iloc[ecg_signal_index * fs * time_window:
                                  ecg_signal_index * fs * time_window +
-                                 fs * time_window] = signal_quality[0]
+                                 fs * time_window] = signal_quality
 
     return classif_ecg_qc_data
 
