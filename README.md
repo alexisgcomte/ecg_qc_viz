@@ -1,16 +1,33 @@
 # ecg_qc_viz
 
-# ecg_sqi_private
+# ecg_qc_viz
 
 Patient used:
 patient: 103001
 
-Frame intéressant:
-57623.665
+## I - Installation / Prerequisites
 
-## I - Getting started:
+#### Dependencies
 
-After installing requirements:
+ecg_qc requires:
+
+- Python (>= 3.6)
+- ecg-qc (>=1.0b3)
+- plotly  (>=4.14.1)
+- streamlit (>=0.74.1)
+
+
+#### User installation
+
+For manual install, use follow commands:
+
+    $ git clone https://github.com/alexisgcomte/ecg_qc_viz.git
+    $ cd ecg_qc_viz/
+    $ python -m venv env && source env/bin/activate
+    $ pip install -r requirements.txt
+
+
+## II - How to use
 
 0) Create dataset_streamlit folder
 ```bash

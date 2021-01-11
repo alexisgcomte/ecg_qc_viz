@@ -95,7 +95,7 @@ def ecg_qc_predict(dataset: pd.DataFrame) -> pd.DataFrame:
 
         signal_quality = ecg_qc_test.predict_quality(
             ecg_qc_test.compute_sqi_scores(ecg_data))
-        print(signal_quality)
+
         classif_ecg_qc_data.iloc[ecg_signal_index * fs * time_window:
                                  ecg_signal_index * fs * time_window +
                                  fs * time_window] = signal_quality
