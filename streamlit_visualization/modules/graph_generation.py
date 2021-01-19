@@ -23,14 +23,17 @@ def ecg_graph_generation(df: pd.DataFrame,
 
     # ecg_qc preidction
     classif_ecg_qc_data = ecg_qc_predict(graph_df)
+    classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(graph_df)
 
     # consolidation of data
     data = [data[0],
             data[1],
             data[2],
             data[3],
-            np.transpose(classif_ecg_qc_data.values)[0]]
-    labels = list(graph_df.iloc[:, 1:5].columns) + ['ecg_qc pred ']
+            np.transpose(classif_ecg_qc_data.values)[0],
+            np.transpose(classif_ecg_qc_cnn_data.values)[0]]
+    labels = list(graph_df.iloc[:, 1:5].columns) + ['ecg_qc pred '] + \
+        ['ecg_qc cnn ']
 
     fig = go.Figure()
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -109,3 +112,31 @@ def annot_classification_correspondance(classif: int) -> int:
         classif = 0
 
     return classif
+
+
+def ecg_qc_predict_cnn(dataset: pd.DataFrame) -> pd.DataFrame:
+
+    ecg_qc_test = ecg_qc(model_type='cnn')
+    time_window = 2
+    fs = 1000
+
+    classif_ecg_qc_data = pd.DataFrame(
+        range(0, dataset.shape[0]),
+        columns=['classif'])
+
+    for ecg_signal_index in range(
+            math.floor(dataset.shape[0]/(fs * time_window)) + 1):
+
+        start = ecg_signal_index*fs*time_window
+        end = start + fs*time_window
+
+        ecg_data = dataset['ecg_signal'].iloc[start:end].values
+
+        signal_quality = annot_classification_correspondance(
+            ecg_qc_test.get_signal_quality(ecg_data))
+
+        classif_ecg_qc_data.iloc[ecg_signal_index * fs * time_window:
+                                 ecg_signal_index * fs * time_window +
+                                 fs * time_window] = signal_quality
+
+    return classif_ecg_qc_data
