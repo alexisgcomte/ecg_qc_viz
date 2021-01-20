@@ -1,12 +1,28 @@
 import streamlit as st
 import pandas as pd
 from modules.graph_generation import ecg_graph_generation
+from joblib import load
 
 
 target_id = 103001
 fs = 1000
 
 # Loading in cache ECG
+
+# def _max_width_():
+#     max_width_str = f"max-width: 2000px;"
+#     st.markdown(
+#         f"""
+#     <style>
+#     .reportview-container .main .block-container{{
+#         {max_width_str}
+#     }}
+#     </style>
+#     """,
+#         unsafe_allow_html=True,
+#     )
+#
+# _max_width_()
 
 
 @st.cache()
@@ -22,6 +38,7 @@ def load_ecg():
 
 
 # Loading in cache annotations
+
 if target_id == 103001:
     st.sidebar.header('103001 loaded')
 else:
@@ -63,21 +80,40 @@ df_ann = load_annot()
 st.sidebar.header(body='Parameters')
 st.sidebar.subheader(body='Frame selection')
 
-frame_start_selection = st.sidebar.slider(
-    label='Start Frame:',
-    min_value=int(round(df_ecg.index.values[0]/fs, 0)),
-    max_value=int(round(df_ecg.index.values[-1]/fs, 0)),
-    step=1,
-    value=int(round(df_ecg.index.values[0]/fs, 0)))
-
-start_frame = frame_start_selection * fs
-
 frame_window_selection = st.sidebar.slider(
     label='Seconds to display:',
     min_value=0,
     max_value=180,
     step=2,
     value=16)
+
+ecg_graph = st.empty()
+
+def start_frame_definition():
+    df_start_frame = load('streamlit_visualization/next.pkl')
+    start_frame = df_start_frame.iloc[0][0]
+    return df_start_frame, start_frame
+
+
+df_start_frame, start_frame = start_frame_definition()
+
+
+frame_start_selection = st.sidebar.slider(
+    label='Start Frame:',
+    min_value=int(round(df_ecg.index.values[0]/fs, 0)),
+    max_value=int(round(df_ecg.index.values[-1]/fs, 0)),
+    step=1,
+    value=int(round(start_frame/fs, 0)))
+
+start_frame = frame_start_selection * fs
+
+if st.sidebar.button('next'):
+    start_frame += frame_window_selection * fs
+    df_start_frame.iloc[0] = start_frame
+
+if st.sidebar.button('previous'):
+    start_frame -= frame_window_selection * fs
+    df_start_frame.iloc[0] = start_frame
 
 tick_space_selection = st.sidebar.slider(
     label='Tick spacing (seconds):',
@@ -95,9 +131,11 @@ if st.sidebar.checkbox('Frame Selection'):
 
 end_frame = start_frame + frame_window_selection * fs
 
-st.plotly_chart(
+ecg_graph.plotly_chart(
     ecg_graph_generation(df=df_ecg,
                          start_frame=start_frame,
                          end_frame=end_frame,
                          tick_space=tick_space_selection,
                          fs=fs))
+
+df_start_frame.to_pickle('streamlit_visualization/next.pkl')

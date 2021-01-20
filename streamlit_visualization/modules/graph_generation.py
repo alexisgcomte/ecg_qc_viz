@@ -4,6 +4,10 @@ from plotly.subplots import make_subplots
 from ecg_qc import ecg_qc
 import math
 import numpy as np
+import scaleogram as scg
+import streamlit as st
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def ecg_graph_generation(df: pd.DataFrame,
@@ -124,6 +128,9 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame) -> pd.DataFrame:
         range(0, dataset.shape[0]),
         columns=['classif'])
 
+    print(dataset.index[0])
+
+
     for ecg_signal_index in range(
             math.floor(dataset.shape[0]/(fs * time_window)) + 1):
 
@@ -138,5 +145,24 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame) -> pd.DataFrame:
         classif_ecg_qc_data.iloc[ecg_signal_index * fs * time_window:
                                  ecg_signal_index * fs * time_window +
                                  fs * time_window] = signal_quality
+
+                
+
+        # choose default wavelet function 
+        scg.set_default_wavelet('morl')
+
+        signal_length = 2000
+        # range of scales to perform the transform
+        scales = scg.periods2scales(np.arange(1, signal_length+1))
+        # the scaleogram
+        ax = scg.cws(ecg_data, scales=scales, figsize=(10, 4.0), coi = False, ylabel="Period", xlabel="Time",
+                title="scaleogram from frame {} to {}, quality:{}".format(start + dataset.index[0]/fs, end + dataset.index[0]/fs, signal_quality))
+        st.pyplot(ax.figure)
+
+
+       # print("Default wavelet function used to compute the transform:", scg.get_default_wavelet(), "(",
+       #     pywt.ContinuousWavelet(scg.get_default_wavelet()).family_name, ")")
+
+
 
     return classif_ecg_qc_data
