@@ -4,25 +4,13 @@ from modules.graph_generation import ecg_graph_generation
 from joblib import load
 
 
+st.set_page_config(page_title="ECG",
+                   page_icon=":chart_with_upwards_trend:",
+                   layout='wide',
+                   initial_sidebar_state='auto')
+
 target_id = 103001
 fs = 1000
-
-# Loading in cache ECG
-
-# def _max_width_():
-#     max_width_str = f"max-width: 2000px;"
-#     st.markdown(
-#         f"""
-#     <style>
-#     .reportview-container .main .block-container{{
-#         {max_width_str}
-#     }}
-#     </style>
-#     """,
-#         unsafe_allow_html=True,
-#     )
-#
-# _max_width_()
 
 
 @st.cache()
@@ -89,6 +77,7 @@ frame_window_selection = st.sidebar.slider(
 
 ecg_graph = st.empty()
 
+
 def start_frame_definition():
     df_start_frame = load('streamlit_visualization/next.pkl')
     start_frame = df_start_frame.iloc[0][0]
@@ -129,6 +118,11 @@ frame_selection = st.sidebar.selectbox('frame_selection',
 if st.sidebar.checkbox('Frame Selection'):
     start_frame = int(round(frame_selection * fs, 0))
 
+
+wavelet_generation = False
+if st.sidebar.checkbox('Display Wavelet'):
+    wavelet_generation = True
+
 end_frame = start_frame + frame_window_selection * fs
 
 ecg_graph.plotly_chart(
@@ -136,6 +130,8 @@ ecg_graph.plotly_chart(
                          start_frame=start_frame,
                          end_frame=end_frame,
                          tick_space=tick_space_selection,
-                         fs=fs))
+                         fs=fs,
+                         wavelet_generation=wavelet_generation),
+    use_container_width=True)
 
 df_start_frame.to_pickle('streamlit_visualization/next.pkl')
