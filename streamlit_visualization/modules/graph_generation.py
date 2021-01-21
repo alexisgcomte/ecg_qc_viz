@@ -6,15 +6,14 @@ import math
 import numpy as np
 import scaleogram as scg
 import streamlit as st
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 def ecg_graph_generation(df: pd.DataFrame,
                          start_frame: int,
                          end_frame: int,
                          tick_space: int = 9,
-                         fs: int = 1000) -> go.Figure:
+                         fs: int = 1000,
+                         wavelet_generation: bool = False) -> go.Figure:
 
     graph_df = df[(df.index >= start_frame) & (df.index < end_frame)]
 
@@ -27,7 +26,9 @@ def ecg_graph_generation(df: pd.DataFrame,
 
     # ecg_qc preidction
     classif_ecg_qc_data = ecg_qc_predict(graph_df)
-    classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(graph_df)
+    classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(graph_df,
+                                                 wavelet_generation=
+                                                 wavelet_generation)
 
     # consolidation of data
     data = [data[0],
@@ -118,7 +119,8 @@ def annot_classification_correspondance(classif: int) -> int:
     return classif
 
 
-def ecg_qc_predict_cnn(dataset: pd.DataFrame) -> pd.DataFrame:
+def ecg_qc_predict_cnn(dataset: pd.DataFrame,
+                       wavelet_generation=False) -> pd.DataFrame:
 
     ecg_qc_test = ecg_qc(model_type='cnn')
     time_window = 2
@@ -129,7 +131,6 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame) -> pd.DataFrame:
         columns=['classif'])
 
     print(dataset.index[0])
-
 
     for ecg_signal_index in range(
             math.floor(dataset.shape[0]/(fs * time_window)) + 1):
@@ -146,23 +147,25 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame) -> pd.DataFrame:
                                  ecg_signal_index * fs * time_window +
                                  fs * time_window] = signal_quality
 
-                
+        if wavelet_generation:
 
-        # choose default wavelet function 
-        scg.set_default_wavelet('morl')
+            # choose default wavelet function
+            scg.set_default_wavelet('morl')
 
-        signal_length = 2000
-        # range of scales to perform the transform
-        scales = scg.periods2scales(np.arange(1, signal_length+1))
-        # the scaleogram
-        ax = scg.cws(ecg_data, scales=scales, figsize=(10, 4.0), coi = False, ylabel="Period", xlabel="Time",
-                title="scaleogram from frame {} to {}, quality:{}".format(start + dataset.index[0]/fs, end + dataset.index[0]/fs, signal_quality))
-        st.pyplot(ax.figure)
-
-
-       # print("Default wavelet function used to compute the transform:", scg.get_default_wavelet(), "(",
-       #     pywt.ContinuousWavelet(scg.get_default_wavelet()).family_name, ")")
-
-
+            signal_length = 2000
+            # range of scales to perform the transform
+            scales = scg.periods2scales(np.arange(1, signal_length+1))
+            # the scaleogram
+            ax = scg.cws(ecg_data,
+                         scales=scales,
+                         figsize=(10, 4.0),
+                         coi=False,
+                         ylabel="Period",
+                         xlabel="Time",
+                         title="scaleogram from frame {} to {}, quality:{}".
+                         format(start + dataset.index[0]/fs,
+                                end + dataset.index[0]/fs,
+                                signal_quality))
+            st.pyplot(ax.figure)
 
     return classif_ecg_qc_data
