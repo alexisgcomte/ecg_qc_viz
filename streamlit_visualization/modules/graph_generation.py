@@ -27,8 +27,8 @@ def ecg_graph_generation(df: pd.DataFrame,
     # ecg_qc preidction
     classif_ecg_qc_data = ecg_qc_predict(graph_df)
     classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(graph_df,
-                                                 wavelet_generation=
-                                                 wavelet_generation)
+                                                wavelet_generation=
+                                                wavelet_generation)
 
     # consolidation of data
     data = [data[0],
@@ -152,15 +152,22 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame,
             # choose default wavelet function
             scg.set_default_wavelet('morl')
 
-            signal_length = 2000
+            signal_length = 120
             # range of scales to perform the transform
             scales = scg.periods2scales(np.arange(1, signal_length+1))
             # the scaleogram
+
+            sample_ecg = []
+            for element in range(int(round(len(ecg_data)/4,0))):
+                sample_ecg.append(np.mean(ecg_data[4*element:4*element+4]))
+
+            print(len(sample_ecg))
+
             ax = scg.cws(ecg_data,
                          scales=scales,
                          figsize=(10, 4.0),
                          coi=False,
-                         ylabel="Period",
+                         ylabel="Hz",
                          xlabel="Time",
                          title="scaleogram from frame {} to {}, quality:{}".
                          format(start + dataset.index[0]/fs,
