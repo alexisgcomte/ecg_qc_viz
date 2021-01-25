@@ -120,7 +120,7 @@ if st.sidebar.checkbox('Frame Selection'):
 
 
 wavelet_generation = False
-if st.sidebar.checkbox('Display Wavelet'):
+if st.sidebar.checkbox('Display detailed scaleograms and spectrum frequency'):
     wavelet_generation = True
 
 end_frame = start_frame + frame_window_selection * fs
