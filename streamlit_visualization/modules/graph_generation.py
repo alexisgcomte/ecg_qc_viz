@@ -158,7 +158,8 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame,
                                        start=start,
                                        end=end,
                                        fs=fs,
-                                       max_freq_display=50)
+                                       max_freq_display=50,
+                                       classif=signal_quality)
 
     return classif_ecg_qc_data
 
@@ -180,9 +181,9 @@ def generate_spectral_analysis(ecg_data: list,
     #  ax2
     f, t, Sxx = signal.spectrogram(ecg_data,
                                    fs,
-                                   window=('tukey', .1),
-                                   nperseg=100)
-    ax1.pcolormesh(t*fs, -f, Sxx, shading='gouraud')
+                                   window=('tukey', .001),
+                                   nperseg=250)
+    ax1.pcolormesh(t*fs, -f, Sxx, shading='flat')
     ax1.set_ylim(-max_freq_display)
     ax1.set_ylabel('Hz (inv)')
 
