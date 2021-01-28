@@ -22,7 +22,7 @@ def ecg_graph_generation(df: pd.DataFrame,
                          spectrum_max_hz=50) -> go.Figure:
 
     # ecg_qc predictions
-    print(spectrum_max_hz)
+
     ecg_data = df['ecg_signal'].values
 
     classif_ecg_qc_ml_data = ecg_qc_predict(ecg_data=ecg_data,

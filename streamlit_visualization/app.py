@@ -3,7 +3,7 @@ import pandas as pd
 from modules.graph_generation import ecg_graph_generation
 from joblib import load
 from pyedflib import highlevel
-import numpy as np
+from pyedflib import edfreader
 
 
 st.set_page_config(page_title="ECG",
@@ -11,31 +11,53 @@ st.set_page_config(page_title="ECG",
                    layout='wide',
                    initial_sidebar_state='auto')
 
+edf_path = '/home/DATA/lateppe/Recherche_ECG/20210121T1009/'
+edf_files = ['PAT_1/EEG_1_s1.edf',
+             'PAT_2/EEG_3_s1.edf',
+             'PAT_2/EEG_5_s1.edf',
+             'PAT_3/EEG_6_s1.edf',
+             'PAT_3/EEG_8_s1.edf',
+             'PAT_4/EEG_11_s1.edf',
+             'PAT_4/EEG_12_s1.edf',
+             'PAT_4/EEG_13_s1.edf',
+             'PAT_4/EEG_14_s1.edf',
+             'PAT_4/EEG_15_s1.edf',
+             'PAT_4/EEG_16_s1.edf',
+             'PAT_5/EEG_9_s1.edf',
+             'PAT_5/EEG_17_s1.edf',
+             'PAT_5/EEG_19_s1.edf',
+             'PAT_5/EEG_20_s1.edf',
+             'PAT_5/EEG_33_s1.edf',
+             'PAT_5/EEG_34_s1.edf']
 
 wavelet_generation = False
 target_id = '103001_selection'
 
-
 @st.cache()
 def load_ecg():
+
     df_ecg = pd.read_pickle(
         'dataset_streamlit/df_ecg_{}.pkl'.format(
             target_id))
     return df_ecg
 
 
-# @st.cache()
-def load_edf():
-    signals, signal_headers, _ = highlevel.read_edf(
-        '/home/DATA/lateppe/Recherche_ECG/20210121T1009/PAT_4/EEG_12_s1.edf')
-    labels = [signal_headers[i]['label'] for i, j in enumerate(signal_headers)]
-    df_ecg = pd.DataFrame(data=np.transpose(signals), columns=labels)
-    return df_ecg, labels
+def load_edf(edf_file: str,
+             channel: str,
+             start: int = 0,
+             n: int = 10000):
+    # signals, _, _ = highlevel.read_edf(
+    #     edf_file,
+    #     ch_names=channel)
+    with edfreader.EdfReader(edf_file) as f:
+        signals = f.readSignal(channel, start=start, n=n)
+    df_ecg = pd.DataFrame(data=signals, columns=[channel])
+    return df_ecg
 
 
 # Loading in cache annotations
 
-st.sidebar.header('{} loaded'.format(target_id))
+st.sidebar.header(body='Parameters')
 
 
 @st.cache()
@@ -72,12 +94,30 @@ source_selection = st.sidebar.selectbox('Chose source seleciton',
                                         index=0)
 
 if source_selection == 'La Teppe':
-    fs = 250
-    df_ecg, labels = load_edf()
-    labels_selection = st.sidebar.selectbox('select column',
-                                            options=labels,
-                                            index=0)
-    df_ecg['ecg_signal'] = df_ecg[labels_selection]
+    edf_patient_selection = st.sidebar.selectbox('Chose patient',
+                                                 options=edf_files,
+                                                 index=0)
+    edf_file = edf_path+edf_patient_selection
+    headers = highlevel.read_edf_header(edf_file)
+    channels = headers['channels']
+    channels_selection = st.sidebar.selectbox('select channel',
+                                              options=channels,
+                                              index=0)
+
+    start_selection = st.sidebar.text_input("Start of sample (k):", 0)
+    start_selection = int(start_selection) * 1_000
+
+    n_selection = st.sidebar.text_input("Size of sample (k):", 100)
+    n_selection = int(n_selection) * 1_000
+
+    fs = headers['SignalHeaders'][
+        channels.index(channels_selection)]['sample_rate']
+    df_ecg = load_edf(edf_file=edf_file,
+                      channel=channels.index(channels_selection),
+                      start=start_selection,
+                      n=n_selection)
+    df_ecg.columns = ['ecg_signal']
+
 else:
     fs = 1000
     df_ecg = load_ecg()
@@ -85,8 +125,6 @@ else:
 
 
 # Subheader
-
-st.sidebar.header(body='Parameters')
 
 st.sidebar.subheader(body='Frame selection')
 
