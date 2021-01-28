@@ -15,45 +15,67 @@ def ecg_graph_generation(df: pd.DataFrame,
                          end_frame: int,
                          tick_space: int = 9,
                          fs: int = 1000,
-                         wavelet_generation: bool = False) -> go.Figure:
+                         wavelet_generation: bool = False,
+                         source: str = 'Physionet',
+                         time_window_ml=9,
+                         time_window_cnn=2,
+                         spectrum_max_hz=50) -> go.Figure:
 
-    graph_df = df[(df.index >= start_frame) & (df.index < end_frame)]
+    # ecg_qc predictions
+    print(spectrum_max_hz)
+    ecg_data = df['ecg_signal'].values
+
+    classif_ecg_qc_ml_data = ecg_qc_predict(ecg_data=ecg_data,
+                                            time_window_ml=time_window_ml,
+                                            fs=fs)
+
+    generate_spectral_analysis(ecg_data=df['ecg_signal'].values,
+                               start=0,
+                               end=len(df['ecg_signal'].values),
+                               fs=fs,
+                               spectrum_max_hz=spectrum_max_hz)
+
+    # classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(df,
+    #                                              wavelet_generation=
+    #                                              wavelet_generation,
+    #                                              time_window_cnn=2)
 
     # annotation converted in binary
-    for column in graph_df.columns[1:5]:
-        graph_df[column] = graph_df[column].apply(
-            lambda x: annot_classification_correspondance(x))
 
-    data = np.transpose(graph_df.iloc[:, 1:5].values)
+    if source == 'Physionet':
+        for column in df.columns[1:5]:
+            df[column] = df[column].apply(
+                lambda x: annot_classification_correspondance(x))
 
-    # ecg_qc preidction
-    classif_ecg_qc_data = ecg_qc_predict(graph_df)
+        data = np.transpose(df.iloc[:, 1:5].values)
 
-    generate_spectral_analysis(ecg_data=graph_df['ecg_signal'].values,
-                               start=0,
-                               end=len(graph_df['ecg_signal'].values),
-                               fs=fs,
-                               max_freq_display=50)
+        labels = list(df.iloc[:, 1:5].columns) + ['ecg_qc pred '] + \
+            ['ecg_qc cnn ']
 
-    classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(graph_df,
-                                                 wavelet_generation=
-                                                 wavelet_generation,
-                                                 time_window=2)
+        data = [data[0],
+                data[1],
+                data[2],
+                data[3],
+                classif_ecg_qc_ml_data,
+                # np.transpose(classif_ecg_qc_cnn_data.values)[0]]
+                classif_ecg_qc_ml_data]
 
-    # consolidation of data
-    data = [data[0],
-            data[1],
-            data[2],
-            data[3],
-            np.transpose(classif_ecg_qc_data.values)[0],
-            np.transpose(classif_ecg_qc_cnn_data.values)[0]]
-    labels = list(graph_df.iloc[:, 1:5].columns) + ['ecg_qc pred '] + \
-        ['ecg_qc cnn ']
+    if source == 'La Teppe':
+        for column in df.columns[1:5]:
+            df[column] = 1
+        data = np.transpose(df.iloc[:, 1:5].values)
+        labels = ['ecg_qc pred '] + \
+            ['ecg_qc cnn ']
+
+        # consolidation of data
+        data = [classif_ecg_qc_ml_data,
+                # np.transpose(classif_ecg_qc_cnn_data.values)[0]]
+                classif_ecg_qc_ml_data]
 
     fig = go.Figure()
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    fig.add_trace(go.Heatmap(x=graph_df.index/fs,
+    fig.add_trace(go.Heatmap(x=df.index/fs,
                              y=labels,
                              z=data,
                              colorscale=[[0.0, "rgb(160,0,0)"],
@@ -65,8 +87,8 @@ def ecg_graph_generation(df: pd.DataFrame,
                              ygap=1),
                   secondary_y=True)
 
-    fig.add_trace(go.Scatter(x=graph_df.index/fs,
-                             y=graph_df['ecg_signal'],
+    fig.add_trace(go.Scatter(x=df.index/fs,
+                             y=df['ecg_signal'],
                              mode='lines',
                              name='ecg_signal',
                              marker_color='rgba(44, 117, 255, .8)'),
@@ -81,7 +103,7 @@ def ecg_graph_generation(df: pd.DataFrame,
                                   ticks="inside",
                                   # ticklabelposition='inside top',
                                   tickson="boundaries",
-                                  tick0=graph_df.index[0]/fs,
+                                  tick0=df.index[0]/fs,
                                   ticklen=10,
                                   tickwidth=1,
                                   dtick=tick_space,
@@ -93,30 +115,23 @@ def ecg_graph_generation(df: pd.DataFrame,
     return fig
 
 
-def ecg_qc_predict(dataset: pd.DataFrame) -> pd.DataFrame:
+def ecg_qc_predict(ecg_data: np.ndarray,
+                   time_window_ml: int = 9,
+                   fs: int = 1000) -> np.ndarray:
 
     ecg_qc_test = ecg_qc()
-    time_window = 9
-    fs = 1000
+    classif_ecg_qc_data = np.zeros(len(ecg_data))
 
-    classif_ecg_qc_data = pd.DataFrame(
-        range(0, dataset.shape[0]),
-        columns=['classif'])
+    for start in range(
+            math.floor(len(ecg_data)/(fs * time_window_ml)) + 1):
 
-    for ecg_signal_index in range(
-            math.floor(dataset.shape[0]/(fs * time_window)) + 1):
-
-        start = ecg_signal_index*fs*time_window
-        end = start + fs*time_window
-
-        ecg_data = dataset['ecg_signal'].iloc[start:end].values
+        start = start * fs * time_window_ml
+        end = start + fs * time_window_ml
 
         signal_quality = ecg_qc_test.predict_quality(
-            ecg_qc_test.compute_sqi_scores(ecg_data))
+            ecg_qc_test.compute_sqi_scores(ecg_data[start:end]))
 
-        classif_ecg_qc_data.iloc[ecg_signal_index * fs * time_window:
-                                 ecg_signal_index * fs * time_window +
-                                 fs * time_window] = signal_quality
+        classif_ecg_qc_data[start:end] = signal_quality
 
     return classif_ecg_qc_data
 
@@ -131,7 +146,7 @@ def annot_classification_correspondance(classif: int) -> int:
 
 def ecg_qc_predict_cnn(dataset: pd.DataFrame,
                        wavelet_generation: bool = False,
-                       time_window: int = 2,
+                       time_window_cnn: int = 2,
                        fs: int = 1000) -> pd.DataFrame:
 
     ecg_qc_test = ecg_qc(model_type='cnn')
@@ -141,10 +156,10 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame,
         columns=['classif'])
 
     for ecg_signal_index in range(
-            math.floor(dataset.shape[0]/(fs * time_window)) + 1):
+            math.floor(dataset.shape[0]/(fs * time_window_cnn)) + 1):
 
-        start = ecg_signal_index*fs*time_window
-        end = start + fs*time_window
+        start = ecg_signal_index * fs * time_window_cnn
+        end = start + fs * time_window_cnn
 
         ecg_data = dataset['ecg_signal'].iloc[start:end].values
 
@@ -158,7 +173,7 @@ def ecg_qc_predict_cnn(dataset: pd.DataFrame,
                                        start=start,
                                        end=end,
                                        fs=fs,
-                                       max_freq_display=50,
+                                       spectrum_max_hz=50,
                                        classif=signal_quality)
 
     return classif_ecg_qc_data
@@ -168,7 +183,7 @@ def generate_spectral_analysis(ecg_data: list,
                                start: int,
                                end: int,
                                classif: str = 'NA',
-                               max_freq_display: int = 40,
+                               spectrum_max_hz: int = 40,
                                fs: int = 1000):
 
     fig, (ax0, ax1, ax2) = plt.subplots(3, 1, figsize=(8, 4), sharex=True)
@@ -184,13 +199,13 @@ def generate_spectral_analysis(ecg_data: list,
                                    window=('tukey', .001),
                                    nperseg=250)
     ax1.pcolormesh(t*fs, -f, Sxx, shading='flat')
-    ax1.set_ylim(-max_freq_display)
+    ax1.set_ylim(-spectrum_max_hz)
     ax1.set_ylabel('Hz (inv)')
 
     # ax1
     scg.set_default_wavelet('morl')
 
-    signal_length = max_freq_display
+    signal_length = spectrum_max_hz
     # range of scales to perform the transform
     scales = scg.periods2scales(np.arange(1, signal_length+1))
 
