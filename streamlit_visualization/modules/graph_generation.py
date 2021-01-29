@@ -14,7 +14,7 @@ def ecg_graph_generation(df: pd.DataFrame,
                          start_frame: int,
                          end_frame: int,
                          tick_space: int = 9,
-                         fs: int = 1000,
+                         fs: int = 1_000,
                          wavelet_generation: bool = False,
                          source: str = 'Physionet',
                          time_window_ml=9,
@@ -27,22 +27,37 @@ def ecg_graph_generation(df: pd.DataFrame,
 
     classif_ecg_qc_ml_data = ecg_qc_predict(ecg_data=ecg_data,
                                             time_window_ml=time_window_ml,
-                                            fs=fs)
+                                            fs=fs,
+                                            wavelet_generation=False)
 
-    generate_spectral_analysis(ecg_data=df['ecg_signal'].values,
+    generate_spectral_analysis(ecg_data=ecg_data,
                                start=0,
-                               end=len(df['ecg_signal'].values),
+                               end=len(ecg_data),
                                fs=fs,
                                spectrum_max_hz=spectrum_max_hz)
-
+    # Uncomment when cnn can load
+    #
     # classif_ecg_qc_cnn_data = ecg_qc_predict_cnn(df,
     #                                              wavelet_generation=
     #                                              wavelet_generation,
-    #                                              time_window_cnn=2)
+    #                                              time_window_cnn=2,
+    #                                               wave)
 
-    # annotation converted in binary
+    # can be removed when CNN can run:
+
+    if wavelet_generation is True:
+        print(fs)
+        generate_detailed_wavelet(ecg_data=ecg_data,
+                                  time_window=2,
+                                  start=0,
+                                  end=0,
+                                  spectrum_max_hz=spectrum_max_hz,
+                                  fs=fs)
 
     if source == 'Physionet':
+
+        # annotation converted in binary
+
         for column in df.columns[1:5]:
             df[column] = df[column].apply(
                 lambda x: annot_classification_correspondance(x))
@@ -117,7 +132,8 @@ def ecg_graph_generation(df: pd.DataFrame,
 
 def ecg_qc_predict(ecg_data: np.ndarray,
                    time_window_ml: int = 9,
-                   fs: int = 1000) -> np.ndarray:
+                   fs: int = 1_000,
+                   wavelet_generation: bool = False) -> np.ndarray:
 
     ecg_qc_test = ecg_qc()
     classif_ecg_qc_data = np.zeros(len(ecg_data))
@@ -133,6 +149,14 @@ def ecg_qc_predict(ecg_data: np.ndarray,
 
         classif_ecg_qc_data[start:end] = signal_quality
 
+        if wavelet_generation:
+            generate_spectral_analysis(ecg_data=ecg_data,
+                                       start=start,
+                                       end=end,
+                                       fs=fs,
+                                       spectrum_max_hz=50,
+                                       classif=signal_quality)
+
     return classif_ecg_qc_data
 
 
@@ -145,9 +169,9 @@ def annot_classification_correspondance(classif: int) -> int:
 
 
 def ecg_qc_predict_cnn(dataset: pd.DataFrame,
-                       wavelet_generation: bool = False,
                        time_window_cnn: int = 2,
-                       fs: int = 1000) -> pd.DataFrame:
+                       fs: int = 1_000,
+                       wavelet_generation: bool = False) -> pd.DataFrame:
 
     ecg_qc_test = ecg_qc(model_type='cnn')
 
@@ -184,7 +208,7 @@ def generate_spectral_analysis(ecg_data: list,
                                end: int,
                                classif: str = 'NA',
                                spectrum_max_hz: int = 40,
-                               fs: int = 1000):
+                               fs: int = 1_000):
 
     fig, (ax0, ax1, ax2) = plt.subplots(3, 1, figsize=(8, 4), sharex=True)
     fig.subplots_adjust(hspace=.01)
@@ -196,8 +220,10 @@ def generate_spectral_analysis(ecg_data: list,
     #  ax2
     f, t, Sxx = signal.spectrogram(ecg_data,
                                    fs,
-                                   window=('tukey', .001),
-                                   nperseg=250)
+                                   # window=('tukey', 0.1),
+                                   # nperseg=150)
+                                   window=('tukey', 0.1),
+                                   nperseg=int(round(fs/4, 0)))
     ax1.pcolormesh(t*fs, -f, Sxx, shading='flat')
     ax1.set_ylim(-spectrum_max_hz)
     ax1.set_ylabel('Hz (inv)')
@@ -210,10 +236,12 @@ def generate_spectral_analysis(ecg_data: list,
     scales = scg.periods2scales(np.arange(1, signal_length+1))
 
     # the scaleogram
-
-    sample_ecg = []
-    for element in range(int(round(len(ecg_data)/4, 0))):
-        sample_ecg.append(np.mean(ecg_data[4*element:4*element+4]))
+    # sampling_ratio = 4
+    # sample_ecg = []
+    # for element in range(int(round(len(ecg_data)/sampling_ratio, 0))):
+    #     sample_ecg.append(np.mean(ecg_data[sampling_ratio * element:
+    #                                        sampling_ratio * element +
+    #                                        sampling_ratio]))
     scg.cws(ecg_data,
             scales=scales,
             figsize=(10, 2.0),
@@ -229,3 +257,27 @@ def generate_spectral_analysis(ecg_data: list,
                  fontsize=10)
 
     st.pyplot(fig)
+
+
+def generate_detailed_wavelet(ecg_data: np.ndarray,
+                              start: int = 0,
+                              end: int = 16_000,
+                              spectrum_max_hz: int = 50,
+                              fs: int = 1_000,
+                              time_window: int = 2):
+
+    for start in range(math.floor(len(ecg_data)/(fs * time_window)) + 1):
+
+        start = start * fs * time_window
+        end = start + fs * time_window
+
+        data_to_generate = ecg_data[start:end]
+        try:
+            generate_spectral_analysis(ecg_data=data_to_generate,
+                                       start=start,
+                                       end=end,
+                                       fs=fs,
+                                       spectrum_max_hz=spectrum_max_hz,
+                                       classif='NA')
+        except Exception:
+            pass
