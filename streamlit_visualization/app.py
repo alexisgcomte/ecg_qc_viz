@@ -33,6 +33,7 @@ edf_files = ['PAT_1/EEG_1_s1.edf',
 wavelet_generation = False
 target_id = '103001_selection'
 
+
 @st.cache()
 def load_ecg():
 
@@ -45,10 +46,7 @@ def load_ecg():
 def load_edf(edf_file: str,
              channel: str,
              start: int = 0,
-             n: int = 10000):
-    # signals, _, _ = highlevel.read_edf(
-    #     edf_file,
-    #     ch_names=channel)
+             n: int = 10_000):
     with edfreader.EdfReader(edf_file) as f:
         signals = f.readSignal(channel, start=start, n=n)
     df_ecg = pd.DataFrame(data=signals, columns=[channel])
@@ -100,8 +98,18 @@ if source_selection == 'La Teppe':
     edf_file = edf_path+edf_patient_selection
     headers = highlevel.read_edf_header(edf_file)
     channels = headers['channels']
+    limited_channels = ['ECG1+ECG1-',
+                        'EMG1+EMG1-',
+                        'EMG6+EMG6-',
+                        'EMG2G2',
+                        'EMG3G2',
+                        'EMG2G2-EMG3G2']
+
+    limited_channels = [limited_channels[i] for i in range(
+        len(limited_channels)) if limited_channels[i] in channels]
+
     channels_selection = st.sidebar.selectbox('select channel',
-                                              options=channels,
+                                              options=limited_channels,
                                               index=0)
 
     start_selection = st.sidebar.text_input("Start of sample (k):", 0)
@@ -110,16 +118,36 @@ if source_selection == 'La Teppe':
     n_selection = st.sidebar.text_input("Size of sample (k):", 100)
     n_selection = int(n_selection) * 1_000
 
-    fs = headers['SignalHeaders'][
-        channels.index(channels_selection)]['sample_rate']
-    df_ecg = load_edf(edf_file=edf_file,
-                      channel=channels.index(channels_selection),
-                      start=start_selection,
-                      n=n_selection)
+    if channels_selection == 'EMG2G2-EMG3G2':
+        channel_1 = 'EMG2G2'
+        channel_2 = 'EMG3G2'
+
+        fs = headers['SignalHeaders'][
+            channels.index(channel_1)]['sample_rate']
+        assert fs == headers['SignalHeaders'][
+            channels.index(channel_2)]['sample_rate']
+
+        df_ecg_1 = load_edf(edf_file=edf_file,
+                            channel=channels.index(channel_1),
+                            start=start_selection,
+                            n=n_selection)
+        df_ecg_2 = load_edf(edf_file=edf_file,
+                            channel=channels.index(channel_1),
+                            start=start_selection,
+                            n=n_selection)
+        df_ecg = df_ecg_1 - df_ecg_2
+    else:
+        fs = headers['SignalHeaders'][
+            channels.index(channels_selection)]['sample_rate']
+        df_ecg = load_edf(edf_file=edf_file,
+                          channel=channels.index(channels_selection),
+                          start=start_selection,
+                          n=n_selection)
+        print(df_ecg)
     df_ecg.columns = ['ecg_signal']
 
 else:
-    fs = 1000
+    fs = 1_000
     df_ecg = load_ecg()
     df_ann = load_annot()
 
@@ -199,7 +227,7 @@ df_ecg = df_ecg[(df_ecg.index >= start_frame) & (df_ecg.index < end_frame)]
 spectrum_max_hz_display = st.sidebar.slider(
     label='Spectrum Max Frequency:',
     min_value=50,
-    max_value=2000,
+    max_value=2_000,
     step=50,
     value=50)
 
