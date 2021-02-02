@@ -143,7 +143,6 @@ if source_selection == 'La Teppe':
                           channel=channels.index(channels_selection),
                           start=start_selection,
                           n=n_selection)
-        print(df_ecg)
     df_ecg.columns = ['ecg_signal']
 
 else:

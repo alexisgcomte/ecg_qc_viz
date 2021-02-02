@@ -131,3 +131,4 @@ dmypy.json
 # Additionnal non-synchronised folders
 ignored/
 dataset_streamlit/
+env2/

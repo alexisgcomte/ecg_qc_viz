@@ -17,18 +17,18 @@ def ecg_graph_generation(df: pd.DataFrame,
                          fs: int = 1_000,
                          wavelet_generation: bool = False,
                          source: str = 'Physionet',
-                         time_window_ml=9,
+                         time_window_ml=2,
                          time_window_cnn=2,
                          spectrum_max_hz=50) -> go.Figure:
 
     # ecg_qc predictions
 
     ecg_data = df['ecg_signal'].values
+    classif_ecg_qc_ml_data = ecg_qc_predict_norm(ecg_data=ecg_data,
+                                                 time_window_ml=time_window_ml,
+                                                 fs=fs,
+                                                 wavelet_generation=False)
 
-    classif_ecg_qc_ml_data = ecg_qc_predict(ecg_data=ecg_data,
-                                            time_window_ml=time_window_ml,
-                                            fs=fs,
-                                            wavelet_generation=False)
 
     generate_spectral_analysis(ecg_data=ecg_data,
                                start=0,
@@ -46,7 +46,6 @@ def ecg_graph_generation(df: pd.DataFrame,
     # can be removed when CNN can run:
 
     if wavelet_generation is True:
-        print(fs)
         generate_detailed_wavelet(ecg_data=ecg_data,
                                   time_window=2,
                                   start=0,
@@ -156,6 +155,47 @@ def ecg_qc_predict(ecg_data: np.ndarray,
                                        fs=fs,
                                        spectrum_max_hz=50,
                                        classif=signal_quality)
+
+    return classif_ecg_qc_data
+
+
+def ecg_qc_predict_norm(ecg_data: np.ndarray,
+                     time_window_ml: int = 9,
+                     fs: int = 1_000,
+                     wavelet_generation: bool = False) -> np.ndarray:
+
+    ecg_qc_test = ecg_qc_ml = ecg_qc(normalized=True,
+                                     model='/home/aura-alexis/github/ecg_qc_viz/env2/lib64/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/xgb_norm_{}s.joblib'.format(time_window_ml),
+                                     data_encoder='/home/aura-alexis/github/ecg_qc_viz/env2/lib64/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/data_encoder/data_encoder_norm_{}s.joblib'.format(time_window_ml),
+                                     sampling_frequency=fs)
+
+    classif_ecg_qc_data = np.zeros(len(ecg_data))
+
+    for start in range(math.floor(len(ecg_data)/(fs * time_window_ml)) + 1):
+
+        start = start * fs * time_window_ml
+        end = start + fs * time_window_ml
+        data = ecg_data[start:end]
+
+        try:
+            signal_quality = ecg_qc_test.predict_quality(
+                ecg_qc_test.compute_sqi_scores(data))
+
+            classif_ecg_qc_data[start:end] = signal_quality
+
+            if wavelet_generation:
+                generate_spectral_analysis(ecg_data=ecg_data,
+                                           start=start,
+                                           end=end,
+                                           fs=fs,
+                                           spectrum_max_hz=50,
+                                           classif=signal_quality)
+
+        except Exception:
+            print('Exception found at frame {} over {}'.format(
+                start,
+                len(ecg_data)))
+            classif_ecg_qc_data[start:end] = 0
 
     return classif_ecg_qc_data
 
