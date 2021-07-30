@@ -11,8 +11,8 @@ df_ecg.head()
 
 ecg_data = df_ecg['ecg_signal'][10000:]
 
-ecg_qc_ml = ecg_qc(normalized=True,
-                   model='/home/aura-alexis/github/ecg_qc_viz/env2/lib64/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/xgb_norm_{}s.joblib'.format(time_window_ml),
+ecg_qc_ml = ecg_qc(normalized=False,
+                   model='env/lib/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/model_2s_rfc_normalized_premium.pkl',
                    data_encoder='/home/aura-alexis/github/ecg_qc_viz/env2/lib64/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/data_encoder/data_encoder_norm_{}s.joblib'.format(time_window_ml))
 
 df_results = df_ecg
