@@ -11,10 +11,11 @@ st.set_page_config(page_title="ECG",
                    layout='wide',
                    initial_sidebar_state='auto')
 
-edf_path = '/home/DATA/lateppe/Recherche_ECG/20210121T1009/'
-edf_files = ['PAT_1/EEG_1_s1.edf',
-             'PAT_2/EEG_3_s1.edf',
+edf_path = '/home/DATA/lateppe/Recherche_ECG/20210211T1032/'
+edf_files = ['PAT_2/EEG_3_s1.edf',
              'PAT_2/EEG_5_s1.edf',
+             'PAT_3/EEG_23_s1.edf',
+             'PAT_3/EEG_25_s1.edf',
              'PAT_3/EEG_6_s1.edf',
              'PAT_3/EEG_8_s1.edf',
              'PAT_4/EEG_11_s1.edf',
@@ -23,12 +24,37 @@ edf_files = ['PAT_1/EEG_1_s1.edf',
              'PAT_4/EEG_14_s1.edf',
              'PAT_4/EEG_15_s1.edf',
              'PAT_4/EEG_16_s1.edf',
-             'PAT_5/EEG_9_s1.edf',
+             'PAT_4/EEG_26_s1.edf',
+             'PAT_4/EEG_32_s1.edf',
+             'PAT_4/EEG_9_s1.edf',
+             'PAT_5/EEG_101_s1.edf',
+             'PAT_5/EEG_104_s1.edf',
+             'PAT_5/EEG_106_s1.edf',
+             'PAT_5/EEG_110_s1.edf',
              'PAT_5/EEG_17_s1.edf',
-             'PAT_5/EEG_19_s1.edf',
              'PAT_5/EEG_20_s1.edf',
+             'PAT_5/EEG_34_s1.edf',
+             'PAT_5/EEG_97_s1.edf',
+             'PAT_5/EEG_102_s1.edf',
+             'PAT_5/EEG_105_s1.edf',
+             'PAT_5/EEG_107_s1.edf',
+             'PAT_5/EEG_111_s1.edf',
+             'PAT_5/EEG_19_s1.edf',
              'PAT_5/EEG_33_s1.edf',
-             'PAT_5/EEG_34_s1.edf']
+             'PAT_5/EEG_91_s1.edf',
+             'PAT_6/EEG_70_s1.edf',
+             'PAT_6/EEG_72_s1.edf',
+             'PAT_6/EEG_73_s1.edf',
+             'PAT_6/EEG_74_s1.edf',
+             'PAT_6/EEG_77_s1.edf',
+             'PAT_6/EEG_79_s1.edf',
+             'PAT_6/EEG_79_s2.edf',
+             'PAT_6/EEG_79_s3.edf',
+             'PAT_6/EEG_79_s4.edf',
+             'PAT_6/EEG_85_s1.edf',
+             'PAT_6/EEG_85_s2.edf',
+             'PAT_6/EEG_85_s3.edf',
+             'PAT_6/EEG_85_s4.edf']
 
 wavelet_generation = False
 target_id = '103001_selection'
@@ -195,7 +221,7 @@ tick_space_selection = st.sidebar.slider(
     min_value=1,
     max_value=60,
     step=1,
-    value=9)
+    value=2)
 
 if source_selection == 'Physionet':
 
@@ -216,9 +242,6 @@ if source_selection == 'Physionet':
 
     df_start_frame.to_pickle('streamlit_visualization/next.pkl')
 
-if st.sidebar.checkbox('Display detailed scaleograms and spectrum frequency'):
-    wavelet_generation = True
-
 end_frame = start_frame + frame_window_selection * fs
 
 df_ecg = df_ecg[(df_ecg.index >= start_frame) & (df_ecg.index < end_frame)]
@@ -238,7 +261,6 @@ ecg_graph.plotly_chart(
                          end_frame=end_frame,
                          tick_space=tick_space_selection,
                          fs=fs,
-                         wavelet_generation=wavelet_generation,
                          source=source_selection,
                          spectrum_max_hz=spectrum_max_hz_display),
     use_container_width=True)
