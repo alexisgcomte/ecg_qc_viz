@@ -132,3 +132,8 @@ dmypy.json
 ignored/
 dataset_streamlit/
 env2/
+<<<<<<< HEAD
+=======
+
+validation_dataset/103001_ECG.dat
+>>>>>>> 4af0268b3d93a43f0ba6ba7f7f51fbb009c57f1f
