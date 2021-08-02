@@ -132,3 +132,6 @@ dmypy.json
 ignored/
 dataset_streamlit/
 env2/
+
+# too big files
+validation_dataset/103001_ECG.dat
