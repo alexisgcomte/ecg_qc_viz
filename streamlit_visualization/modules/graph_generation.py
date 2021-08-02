@@ -164,12 +164,9 @@ def ecg_qc_predict(ecg_data: np.ndarray,
                    normalized: bool = False) -> np.ndarray:
 
     # ecg_qc_test = ecg_qc()
-    ecg_qc_test = ecg_qc(model='model_2s_rfc_normalized_premium.pkl',
+    ecg_qc_test = ecg_qc(model='training_dataset/model.pkl',
                          normalized=normalized)
-<<<<<<< HEAD
 
-=======
->>>>>>> 4af0268b3d93a43f0ba6ba7f7f51fbb009c57f1f
     classif_ecg_qc_data = np.zeros(len(ecg_data))
     sqis_data = [np.zeros(len(ecg_data)) for n in range(6)]
 
