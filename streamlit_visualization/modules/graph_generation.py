@@ -164,7 +164,7 @@ def ecg_qc_predict(ecg_data: np.ndarray,
                    normalized: bool = False) -> np.ndarray:
 
     # ecg_qc_test = ecg_qc()
-    ecg_qc_test = ecg_qc(model='training_dataset/model.pkl',
+    ecg_qc_test = ecg_qc(model='training_dataset/model_2s_dtc.pkl',
                          normalized=normalized)
 
     classif_ecg_qc_data = np.zeros(len(ecg_data))
