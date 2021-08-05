@@ -53,7 +53,7 @@ def ecg_graph_generation(df: pd.DataFrame,
 
     
     df_ecg = df[(df.index >= start_frame) & (df.index < end_frame)]
-        
+
     fig = go.Figure()
     fig = make_subplots()
     fig.add_trace(go.Scatter(x=df_ecg.index,
