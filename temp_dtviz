@@ -1,0 +1,108 @@
+
+digraph G {
+    splines=line;
+    nodesep=0.1;
+    ranksep=.2;
+    rankdir=TD;
+    margin=0.0;
+    
+    node [margin="0.03" penwidth="0.5" width=.1, height=.1];
+    edge [arrowsize=.4 penwidth="0.3"]
+
+    node145 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node145_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node141 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node141_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node135 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node135_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node125 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node125_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node124 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node124_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node102 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node102_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node100 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node100_9005.svg"/></td>
+            </tr>
+            </table>>]
+	node0 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0">
+            
+            <tr>
+                    <td><img src="/tmp/node0_9005.svg"/></td>
+            </tr>
+            </table>>]
+    node145 -> leaf147 [penwidth=1.2 color="#D67C03" label=<>]
+	node141 -> node145 [penwidth=1.2 color="#D67C03" label=<>]
+	node135 -> node141 [penwidth=1.2 color="#D67C03" label=<>]
+	node125 -> node135 [penwidth=1.2 color="#D67C03" label=<>]
+	node124 -> node125 [penwidth=1.2 color="#D67C03" label=<>]
+	node102 -> node124 [penwidth=1.2 color="#D67C03" label=<>]
+	node100 -> node102 [penwidth=1.2 color="#D67C03" label=<>]
+	node0 -> node100 [penwidth=1.2 color="#D67C03" label=<>]
+    leaf147 [margin="0" shape=box penwidth=".5" color="#D67C03" style="dashed" label=<<table border="0" CELLBORDER="0">
+        
+        <tr>
+                <td><img src="/tmp/leaf147_9005.svg"/></td>
+        </tr>
+        </table>>]
+
+    
+            subgraph cluster_legend {
+                style=invis;
+                legend [penwidth="0" margin="0" shape=box margin="0.03" width=.1, height=.1 label=<
+                
+        <table border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td border="0" cellspacing="0" cellpadding="0"><img src="/tmp/legend_9005.svg"/></td>
+            </tr>
+        </table>
+        
+                >]
+            }
+            
+    
+            subgraph cluster_instance {
+                style=invis;
+                X_y [penwidth="0.3" margin="0" shape=box margin="0.03" width=.1, height=.1 label=<
+                
+                <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">q_sqi_score</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#444443" point-size="11">c_sqi_score</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">s_sqi_score</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">k_sqi_score</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">p_sqi_score</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">bas_sqi_score</font></td>
+                </tr>
+                <tr>
+                    <td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">0.50</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#444443" point-size="11">0.77</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">3.13</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">11.74</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">0.51</font></td><td cellpadding="1" align="right" bgcolor="white"><font face="Helvetica" color="#D67C03" point-size="11">0.98</font></td>
+                </tr>
+                </table>
+                
+                >]
+            }
+            leaf147 -> X_y [dir=back; penwidth="1.2" color="#D67C03" label=<<font face="Helvetica" color="#444443" point-size="11"> &#160;Prediction<br/> clean</font>>]
+            
+}
+    

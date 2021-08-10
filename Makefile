@@ -5,6 +5,10 @@ run:
 	. $(FOLDER_PATH)/env/bin/activate; \
 	streamlit run streamlit_visualization/app.py\
 
+model_explicability:
+	. $(FOLDER_PATH)/env/bin/activate; \
+	streamlit run streamlit_model_explicability/app.py\
+
 download_streamlit_dataset_limited:
 	. $(FOLDER_PATH)/env/bin/activate; \
 	gdown https://drive.google.com/u/1/uc?id=1EH_RANmZTh03-oEDYu0cNaD3qRdLZdYQ&export=download; \

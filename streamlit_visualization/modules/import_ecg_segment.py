@@ -52,7 +52,8 @@ class EdfLoader:
     """
 
     def __init__(self,
-                 default_path = '/home/DATA/lateppe/Recherche_ECG/PAT_4'):
+                 default_path = '/home/DATA/lateppe/Recherche_ECG/PAT_4',
+                 edf_file = 'EEG_11_s1.edf'):
         """
         Parameters
         ----------
@@ -63,7 +64,7 @@ class EdfLoader:
         segment : str
             Segment to load
         """
-        self.edf_file_path = (f'{default_path}/EEG_11_s1.edf')
+        self.edf_file_path = (f'{default_path}/{edf_file}')
 
         self.headers = highlevel.read_edf_header(self.edf_file_path)
         self.channels = self.headers['channels']
