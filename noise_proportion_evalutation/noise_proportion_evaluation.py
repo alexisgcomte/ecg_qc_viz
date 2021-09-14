@@ -58,7 +58,7 @@ if __name__ == '__main__':
         signal = list(df_ecg['signal'])
         segment_length = MODEL_TIME_INPUT_S * sampling_frequency_hz
         signal_segments = [signal[start_index:start_index+segment_length] 
-                           for start_index in range
+                           for start_index in range(
                                int(len(signal)/sampling_frequency_hz))]
 
         qualities = [ecg_qc.get_signal_quality(signal_segment)
