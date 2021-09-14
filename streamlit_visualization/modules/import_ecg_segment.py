@@ -69,7 +69,7 @@ class EdfLoader:
         self.headers = highlevel.read_edf_header(self.edf_file_path)
         self.channels = self.headers['channels']
         self.startdate = pd.to_datetime(
-            self.headers['startdate']) + pd.Timedelta(hours=1)
+            self.headers['startdate']) # + pd.Timedelta(hours=1)
 
     def convert_edf_to_dataframe(self,
                                  channel_name: str,
