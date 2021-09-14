@@ -29,7 +29,9 @@ def list_edf_files_path(edf_file_folder: str = EDF_FILE_FOLDER) -> list:
 
 if __name__ == '__main__':
 
-    ecg_qc = EcgQc(model='env/lib/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/dtc_2s.pkl')
+    # ecg_qc = EcgQc(model='env/lib/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/dtc_2s.pkl')
+    ecg_qc = EcgQc(model='exports/rfc_normalized_premium_2s.pkl',
+                   normalized=True)
     edf_files_path = list_edf_files_path()
 
     df_stats = pd.DataFrame(columns=['file',
@@ -76,6 +78,6 @@ if __name__ == '__main__':
                 'bad_quality': np.count_nonzero(np.array(qualities) == 0),
                 'path': edf_file_path},
                 ignore_index=True)
-            df_stats.to_csv('exports/df_stats_global.csv', index=False)
+            df_stats.to_csv('exports/df_stats_global_rfc_norm.csv', index=False)
         except:
             pass

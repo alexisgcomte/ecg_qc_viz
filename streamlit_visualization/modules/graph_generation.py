@@ -107,13 +107,13 @@ def ecg_graph_generation(df: pd.DataFrame,
         for column in df.columns[1:5]:
             df[column] = 1
         data = np.transpose(df.iloc[:, 1:5].values)
-        labels = ['ecg_qc pred '] + \
-            ['ecg_qc self normalized']
+        labels = ['ecg_qc pred dtc'] + \
+            ['ecg_qc pred rfc']
 
         # consolidation of data
         data = [classif_ecg_qc_ml_data,
                 # np.transpose(classif_ecg_qc_cnn_data.values)[0]]
-                classif_ecg_qc_ml_data]
+                classif_ecg_qc_ml_data_norm]
 
     fig = go.Figure()
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -163,7 +163,10 @@ def ecg_qc_predict(ecg_data: np.ndarray,
                    fs: int = 1_000,
                    normalized: bool = False) -> np.ndarray:
 
-    ecg_qc_test = EcgQc(model='env/lib/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/dtc_2s.pkl')
+    if normalized:
+        ecg_qc_test = EcgQc(model='exports/rfc_normalized_premium_2s.pkl', normalized=True)
+    else:
+        ecg_qc_test = EcgQc(model='env/lib/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/dtc_2s.pkl', normalized=False)
 
     classif_ecg_qc_data = np.zeros(len(ecg_data))
     sqis_data = [np.zeros(len(ecg_data)) for n in range(6)]
