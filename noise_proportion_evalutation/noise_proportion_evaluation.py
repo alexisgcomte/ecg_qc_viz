@@ -59,9 +59,10 @@ if __name__ == '__main__':
             # Process
             signal = list(df_ecg['signal'])
             segment_length = MODEL_TIME_INPUT_S * sampling_frequency_hz
-            signal_segments = [signal[start_index:start_index+segment_length] 
+            signal_segments = [signal[start_index*segment_length:
+                                      (start_index+1)*segment_length] 
                                for start_index in range(
-                                   int(len(signal)/sampling_frequency_hz))]
+                                   int(len(signal)/segment_length))]
 
             qualities = [ecg_qc.get_signal_quality(signal_segment)
                          for signal_segment in signal_segments]
@@ -76,6 +77,5 @@ if __name__ == '__main__':
                 'path': edf_file_path},
                 ignore_index=True)
             df_stats.to_csv('exports/df_stats_global.csv', index=False)
-
         except:
             pass

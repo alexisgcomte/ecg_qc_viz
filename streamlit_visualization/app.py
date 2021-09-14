@@ -1,3 +1,4 @@
+from google.protobuf.symbol_database import Default
 import streamlit as st
 import pandas as pd
 from modules.graph_generation import ecg_graph_generation
@@ -11,50 +12,10 @@ st.set_page_config(page_title="ECG",
                    layout='wide',
                    initial_sidebar_state='auto')
 
-edf_path = '/home/DATA/lateppe/Recherche_ECG/20210211T1032/'
-edf_files = ['PAT_2/EEG_3_s1.edf',
-             'PAT_2/EEG_5_s1.edf',
-             'PAT_3/EEG_23_s1.edf',
-             'PAT_3/EEG_25_s1.edf',
-             'PAT_3/EEG_6_s1.edf',
-             'PAT_3/EEG_8_s1.edf',
-             'PAT_4/EEG_11_s1.edf',
-             'PAT_4/EEG_12_s1.edf',
-             'PAT_4/EEG_13_s1.edf',
-             'PAT_4/EEG_14_s1.edf',
-             'PAT_4/EEG_15_s1.edf',
-             'PAT_4/EEG_16_s1.edf',
-             'PAT_4/EEG_26_s1.edf',
-             'PAT_4/EEG_32_s1.edf',
-             'PAT_4/EEG_9_s1.edf',
-             'PAT_5/EEG_101_s1.edf',
-             'PAT_5/EEG_104_s1.edf',
-             'PAT_5/EEG_106_s1.edf',
-             'PAT_5/EEG_110_s1.edf',
-             'PAT_5/EEG_17_s1.edf',
-             'PAT_5/EEG_20_s1.edf',
-             'PAT_5/EEG_34_s1.edf',
-             'PAT_5/EEG_97_s1.edf',
-             'PAT_5/EEG_102_s1.edf',
-             'PAT_5/EEG_105_s1.edf',
-             'PAT_5/EEG_107_s1.edf',
-             'PAT_5/EEG_111_s1.edf',
-             'PAT_5/EEG_19_s1.edf',
-             'PAT_5/EEG_33_s1.edf',
-             'PAT_5/EEG_91_s1.edf',
-             'PAT_6/EEG_70_s1.edf',
-             'PAT_6/EEG_72_s1.edf',
-             'PAT_6/EEG_73_s1.edf',
-             'PAT_6/EEG_74_s1.edf',
-             'PAT_6/EEG_77_s1.edf',
-             'PAT_6/EEG_79_s1.edf',
-             'PAT_6/EEG_79_s2.edf',
-             'PAT_6/EEG_79_s3.edf',
-             'PAT_6/EEG_79_s4.edf',
-             'PAT_6/EEG_85_s1.edf',
-             'PAT_6/EEG_85_s2.edf',
-             'PAT_6/EEG_85_s3.edf',
-             'PAT_6/EEG_85_s4.edf']
+edf_path = '/home/DATA/lateppe/RechercheDetectionCrise_PL/'
+edf_files = ['PAT_10/EEG_122_s1.edf',
+             'PAT_10/EEG_250_s20.edf',
+             'PAT_7/EEG_491_s12.edf']
 
 wavelet_generation = False
 target_id = '103001_selection'
@@ -115,12 +76,16 @@ def load_annot():
 
 source_selection = st.sidebar.selectbox('Chose source seleciton',
                                         options=['Physionet', 'La Teppe'],
-                                        index=0)
+                                        index=1)
 
 if source_selection == 'La Teppe':
     edf_patient_selection = st.sidebar.selectbox('Chose patient',
                                                  options=edf_files,
                                                  index=0)
+
+    edf_patient_selection = st.sidebar.text_input(
+            'manual input',
+            'PAT_10/EEG_122_s1.edf')
     edf_file = edf_path+edf_patient_selection
     headers = highlevel.read_edf_header(edf_file)
     channels = headers['channels']

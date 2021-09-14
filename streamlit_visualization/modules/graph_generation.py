@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from ecg_qc import ecg_qc
+from ecg_qc import EcgQc 
 import math
 import numpy as np
 import streamlit as st
@@ -163,26 +163,25 @@ def ecg_qc_predict(ecg_data: np.ndarray,
                    fs: int = 1_000,
                    normalized: bool = False) -> np.ndarray:
 
-    # ecg_qc_test = ecg_qc()
-    ecg_qc_test = ecg_qc(model='training_dataset/model_2s_dtc.pkl',
-                         normalized=normalized)
+    ecg_qc_test = EcgQc(model='env/lib/python3.6/site-packages/ecg_qc-1.0b4-py3.6.egg/ecg_qc/ml/models/dtc_2s.pkl')
 
     classif_ecg_qc_data = np.zeros(len(ecg_data))
     sqis_data = [np.zeros(len(ecg_data)) for n in range(6)]
-
+    
     for start in range(
-            math.floor(len(ecg_data)/(fs * time_window_ml)) + 1):
+            math.floor(len(ecg_data)/(fs * time_window_ml))):
 
         start = start * fs * time_window_ml
         end = start + fs * time_window_ml
+        
         ecg_signal = np.array(ecg_data[start:end])
-
         signal_quality = ecg_qc_test.get_signal_quality(ecg_signal)
         classif_ecg_qc_data[start:end] = signal_quality
 
         sqis = ecg_qc_test.compute_sqi_scores(ecg_signal)[0]
         for n in range(6):
             sqis_data[n][start:end] = sqis[n]
+
 
     return classif_ecg_qc_data, sqis_data
 
